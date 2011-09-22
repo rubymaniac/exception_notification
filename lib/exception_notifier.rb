@@ -17,6 +17,7 @@ class ExceptionNotifier
     Notifier.default_exception_recipients = @options[:exception_recipients]
     Notifier.default_email_prefix         = @options[:email_prefix]
     Notifier.default_sections             = @options[:sections]
+    Notifier.default_timer                = @options[:timer]
 
     @options[:ignore_exceptions] ||= self.class.default_ignore_exceptions
   end
@@ -26,10 +27,18 @@ class ExceptionNotifier
   rescue Exception => exception
     options = (env['exception_notifier.options'] ||= Notifier.default_options)
     options.reverse_merge!(@options)
-
+    kontroller = env['action_controller.instance'] || ::ExceptionNotifier::MissingController.new
+    
+    agent = Redis.new
+    key = "#{exception.class}@#{kontroller.controller_name}##{kontroller.action_name}"
+    
     unless Array.wrap(options[:ignore_exceptions]).include?(exception.class)
-      Notifier.exception_notification(env, exception).deliver
-      env['exception_notifier.delivered'] = true
+      unless (t=agent.hget("exception_timer", key)).present? && Time.at(t.to_i) > Time.now
+        Notifier.exception_notification(env, exception).deliver
+        agent.hset("exception_timer", key, (Time.now + options[:timer]).to_i)
+        agent.quit
+        env['exception_notifier.delivered'] = true
+      end
     end
 
     raise exception

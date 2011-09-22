@@ -14,6 +14,7 @@ class ExceptionNotifier
       attr_writer :default_exception_recipients
       attr_writer :default_email_prefix
       attr_writer :default_sections
+      attr_accessor :default_timer
 
       def default_sender_address
         @default_sender_address || %("Exception Notifier" <exception.notifier@default.com>)
@@ -35,7 +36,8 @@ class ExceptionNotifier
         { :sender_address => default_sender_address,
           :exception_recipients => default_exception_recipients,
           :email_prefix => default_email_prefix,
-          :sections => default_sections }
+          :sections => default_sections,
+          :timer => default_timer }
       end
     end
 
