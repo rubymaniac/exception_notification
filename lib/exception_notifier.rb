@@ -33,11 +33,13 @@ class ExceptionNotifier
     key = "#{exception.class}@#{kontroller.controller_name}##{kontroller.action_name}"
     
     unless Array.wrap(options[:ignore_exceptions]).include?(exception.class)
-      unless (t=agent.hget("exception_timer", key)).present? && Time.at(t.to_i) > Time.now
-        Notifier.exception_notification(env, exception).deliver
-        agent.hset("exception_timer", key, (Time.now + options[:timer]).to_i)
-        agent.quit
-        env['exception_notifier.delivered'] = true
+      unless (t=agent.hget("exception_timer", key)).present? 
+        if Time.at(t.to_i) > Time.now
+          Notifier.exception_notification(env, exception).deliver
+          agent.hset("exception_timer", key, (Time.now + options[:timer]).to_i)
+          agent.quit
+          env['exception_notifier.delivered'] = true
+        end
       end
     end
 
