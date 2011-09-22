@@ -27,20 +27,28 @@ class ExceptionNotifier
   rescue Exception => exception
     options = (env['exception_notifier.options'] ||= Notifier.default_options)
     options.reverse_merge!(@options)
-    kontroller = env['action_controller.instance'] || ::ExceptionNotifier::MissingController.new
     
-    agent = Redis.new
-    key = "#{exception.class}@#{kontroller.controller_name}##{kontroller.action_name}"
+    if options[:timer].present?
+      kontroller = env['action_controller.instance'] || ::ExceptionNotifier::MissingController.new
+      agent = Redis.new
+      key = "#{exception.class}@#{kontroller.controller_name}##{kontroller.action_name}"
     
-    unless Array.wrap(options[:ignore_exceptions]).include?(exception.class)
-      unless (t=agent.hget("exception_timer", key)).present? && Time.at(t.to_i) > Time.now
-        Notifier.exception_notification(env, exception).deliver
-        agent.hset("exception_timer", key, (Time.now + options[:timer]).to_i)
-        agent.quit
-        env['exception_notifier.delivered'] = true
+      unless Array.wrap(options[:ignore_exceptions]).include?(exception.class)
+        unless (t=agent.hget("exception_timer", key)).present? && Time.at(t.to_i) > Time.now
+          send_email(env, exception)
+          agent.hset("exception_timer", key, (Time.now + options[:timer]).to_i)
+          agent.quit
+          
+        end
       end
+    else
+      send_email(env, exception)
     end
-
     raise exception
+  end
+  
+  def send_email(env, exception)
+    Notifier.exception_notification(env, exception).deliver
+    env['exception_notifier.delivered'] = true
   end
 end
