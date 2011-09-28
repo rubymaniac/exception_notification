@@ -29,7 +29,7 @@ class ExceptionNotifier
     options.reverse_merge!(@options)
     
     if options[:timer].present?
-      kontroller = env['action_controller.instance'] || ::ExceptionNotifier::MissingController.new
+      kontroller = env['action_controller.instance'] || MissingController.new
       agent = Redis.new
       key = "#{exception.class}@#{kontroller.controller_name}##{kontroller.action_name}"
     
