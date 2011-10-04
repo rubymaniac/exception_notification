@@ -1,5 +1,6 @@
 require 'action_mailer'
 require 'pp'
+require 'missing_controller'
 
 class ExceptionNotifier
   class Notifier < ActionMailer::Base
@@ -38,11 +39,6 @@ class ExceptionNotifier
           :email_prefix => default_email_prefix,
           :sections => default_sections,
           :timer => default_timer }
-      end
-    end
-
-    class MissingController
-      def method_missing(*args, &block)
       end
     end
 
