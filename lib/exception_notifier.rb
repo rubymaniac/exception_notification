@@ -1,6 +1,6 @@
 require 'action_dispatch'
 require 'exception_notifier/notifier'
-require 'missing_controller'
+require 'exception_notifier/missing_controller'
 
 class ExceptionNotifier
   def self.default_ignore_exceptions
