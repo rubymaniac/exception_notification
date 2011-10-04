@@ -1,6 +1,6 @@
 require 'action_mailer'
 require 'pp'
-require 'missing_controller'
+require 'exception_notifier/missing_controller'
 
 class ExceptionNotifier
   class Notifier < ActionMailer::Base
