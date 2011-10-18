@@ -8,6 +8,12 @@ application. The plugin is configurable, allowing programmers to specify:
 * the sender address of the email
 * the recipient addresses
 * the text used to prefix the subject line
+* the time between same exception notifications.
+
+The timer option is the time that must pass in order to get notified again for the same exception. Say an exception
+of some class A gets raised from a controller B and from a specific action C. If another exception 
+of the same kind (class, controller, action) gets raised within the timer option then no notification is send. 
+This prevents the spammy behavior of the exception notification.
 
 The email includes information about the current request, session, and
 environment, and also gives a backtrace of the exception.
@@ -18,7 +24,7 @@ Installation
 You can use the latest ExceptionNotification gem with Rails 3, by adding
 the following line in your Gemfile
 
-    gem 'exception_notification'
+    gem 'exception_notification', :require => 'exception_notifier', :git => 'git@github.com:rubymaniac/exception_notification.git'
 
 As of Rails 3 ExceptionNotification is used as a rack middleware, so you can
 configure its options on your config.ru file, or in the environment you
@@ -28,7 +34,8 @@ run on production. You can make it work by
     Whatever::Application.config.middleware.use ExceptionNotifier,
       :email_prefix => "[Whatever] ",
       :sender_address => %{"notifier" <notifier@example.com>},
-      :exception_recipients => %w{exceptions@example.com}
+      :exception_recipients => %w{exceptions@example.com},
+      :timer => 5.minutes
 
 Customization
 ---
